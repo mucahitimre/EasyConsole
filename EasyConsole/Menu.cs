@@ -1,43 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿namespace EasyConsole;
 
-namespace EasyConsole
+public class Menu
 {
-    public class Menu
+    private IList<Option> Options { get; set; } = new List<Option>();
+
+    public void Display()
     {
-        private IList<Option> Options { get; set; }
-
-        public Menu()
+        var lasts = Options.Where(w => w.IsLast).ToList();
+        var different = Options.Except(lasts).ToList();
+        different.AddRange(lasts);
+        Options = different;
+            
+        for (var i = 0; i < Options.Count; i++)
         {
-            Options = new List<Option>();
-        }
+            var item = Options[i];
 
-        public void Display()
-        {
-            for (int i = 0; i < Options.Count; i++)
+            if (item.Color == null)
             {
-                Console.WriteLine("{0}. {1}", i + 1, Options[i].Name);
+                Console.WriteLine("{0}. {1}", i + 1, item.Name);
             }
-            int choice = Input.ReadInt("Choose an option:", min: 1, max: Options.Count);
-
-            Options[choice - 1].Callback();
+            else
+            {
+                Output.WriteLine(item.Color.Value, $"{i + 1}. {item.Name}");
+            }
         }
 
-        public Menu Add(string option, Action callback)
-        {
-            return Add(new Option(option, callback));
-        }
+        var choice = Input.ReadInt("Choose an option:", min: 1, max: Options.Count);
 
-        public Menu Add(Option option)
-        {
-            Options.Add(option);
-            return this;
-        }
+        Options[choice - 1].Callback();
+    }
 
-        public bool Contains(string option)
-        {
-            return Options.FirstOrDefault((op) => op.Name.Equals(option)) != null;
-        }
+    public Menu Add(string option, Action callback)
+    {
+        return Add(new Option(option, callback));
+    }
+
+    public Menu Add(Option option)
+    {
+        Options.Add(option);
+
+        return this;
+    }
+
+    public bool Contains(string option)
+    {
+        return Options.FirstOrDefault((op) => op.Name.Equals(option)) != null;
     }
 }

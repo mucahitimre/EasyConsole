@@ -1,26 +1,37 @@
-﻿namespace EasyConsole
+﻿namespace EasyConsole;
+
+public abstract class MenuPage : Page
 {
-    public abstract class MenuPage : Page
+    private Menu Menu { get; set; }
+
+    protected MenuPage(string title, ConsoleBase consoleBase, params Option[] options)
+        : base(title, consoleBase)
     {
-        protected Menu Menu { get; set; }
+        Menu = new Menu();
 
-        public MenuPage(string title, Program program, params Option[] options)
-            : base(title, program)
+        foreach (var option in options)
         {
-            Menu = new Menu();
+            Menu.Add(option);
+        }
+    }
 
-            foreach (var option in options)
-                Menu.Add(option);
+    public override void Display()
+    {
+        base.Display();
+
+        if (ConsoleBase.NavigationEnabled && !Menu.Contains("Go back"))
+        {
+            Menu.Add(new Option(ConsoleColor.Cyan ,"Go back", () => { ConsoleBase.NavigateBack(); }));
         }
 
-        public override void Display()
+        Menu.Display();
+    }
+
+    protected override void AddHomeOption()
+    {
+        if (ConsoleBase.NavigationEnabled && !Menu.Contains("Go home"))
         {
-            base.Display();
-
-            if (Program.NavigationEnabled && !Menu.Contains("Go back"))
-                Menu.Add("Go back", () => { Program.NavigateBack(); });
-
-            Menu.Display();
+            Menu.Add(new Option(ConsoleColor.DarkCyan ,"Go home", () => { ConsoleBase.NavigateHome(); }, true));
         }
     }
 }
